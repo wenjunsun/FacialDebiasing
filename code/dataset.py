@@ -1,4 +1,6 @@
 from enum import Enum
+from datasets.XRayNegative import XRayNegativeDataset
+from datasets.XRayPositive import XRayPositiveDataset
 from datasets.h5celeba import H5CelebA
 import os
 from datasets.h5imagenet import H5Imagenet
@@ -105,9 +107,10 @@ def make_train_and_valid_loaders(
         logger.info("Creating the celeb and imagenet dataset from the h5 file!")
         celeb_dataset, imagenet_dataset = make_h5_datasets(**kwargs)
     else:
-        logger.info("Creating the Imagenet and CelebDataset")
-        imagenet_dataset = ImagenetDataset(path_to_images=path_to_imagenet_images, **kwargs)
-        celeb_dataset = CelebDataset(path_to_images=path_to_celeba_images, **kwargs)
+        # logger.info("Creating the Imagenet and CelebDataset")
+        logger.info('creating X ray positive and negative datasets')
+        imagenet_dataset = XRayNegativeDataset(path_to_images=kwargs['path_X_ray_images'], **kwargs)
+        celeb_dataset = XRayPositiveDataset(path_to_images=kwargs['path_X_ray_images'], **kwargs)
 
     # Split both datasets into training and validation
     celeb_train, celeb_valid = split_dataset(celeb_dataset, train_size, random_seed, nr_images)

@@ -94,6 +94,8 @@ class Config:
     run_mode: str = 'both' if ARGS.run_mode is None else ARGS.run_mode
     # Folder name of the run
     run_folder: str = '' if ARGS.folder_name is None else ARGS.folder_name
+    # Path to XRay images
+    path_X_ray_images: str = 'data/CheXpert_Images'
     # Path to CelebA images
     path_to_celeba_images: str = 'data/celeba/images'
     # Path to CelebA bounding-boxes
