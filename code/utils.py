@@ -19,7 +19,9 @@ def calculate_accuracy(labels, pred):
     return float(((pred > 0) == (labels > 0)).sum()) / labels.size()[0]
 
 def get_best_and_worst_predictions(labels, pred, device):
-    """Returns indices of the best and worst predicted faces."""
+    """Returns indices of the best and worst predicted faces. 
+    This is based on the probability of the prediction and the actual label.
+    It is NOT based on the rare/frequent latent space representation."""
     n_rows = 4
     n_samples = n_rows**2
 

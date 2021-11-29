@@ -127,9 +127,14 @@ class Trainer:
             epoch_start_t = datetime.now()
             logger.info(f"Starting epoch: {epoch+1}/{epochs}")
 
+            # before we official do backprop, we need to update the sampling
+            # weights for each data point by just forward pass the data
+            # into the encoder and see how data points behave in the z-space
+            # data that are closely clustered in z-space will have less weight
+            # for sampling and the converse is true for data that are not closely clustered.
             self._update_sampling_histogram(epoch)
 
-            # Training
+            # Training - actually train image classifier based on the sampler, through backprop.
             train_loss, train_acc = self._train_epoch()
             epoch_train_t = datetime.now() - epoch_start_t
             logger.info(f"epoch {epoch+1}/{epochs}::Training done")
@@ -205,7 +210,10 @@ class Trainer:
         logger.save(f"Stored model and results at results/{self.run_folder}")
 
     def visualize_bias(self, probs, data_loader, all_labels, all_index, epoch, n_rows=3):
-        # TODO: Add annotation
+        """
+        Plot the images that have the highest weights and lowest weights for being sampled
+        by the train loader in the next round. Save these images in the designated folder.
+        """
         n_samples = n_rows ** 2
 
         highest_probs = probs.argsort(descending=True)[:n_samples]
@@ -315,19 +323,22 @@ class Trainer:
 
     def _update_sampling_histogram(self, epoch: int):
         """Updates the data loader for faces to be proportional to how challenge each image is, in case
-        debias_type not none is.
+        debias_type is not none.
         """
         hist_loader = make_hist_loader(self.train_loaders.faces.dataset, self.batch_size)
 
         if self.debias_type != 'none':
             hist = self._update_histogram(hist_loader, epoch)
+            # updating the sampler's probability of sampling each data point
+            # to be based on what we calculated from the latent space histogram.
             self.train_loaders.faces.sampler.weights = hist
         else:
             self.train_loaders.faces.sampler.weights = torch.ones(len(self.train_loaders.faces.sampler.weights))
 
 
     def _update_histogram(self, data_loader, epoch):
-        """Updates the histogram of `self.model`."""
+        """Updates the histogram of `self.model`.
+        Returns the probability of sampling each data point according to the histogram"""
         logger.info(f"Updating weight histogram using method: {self.debias_type}")
 
         self.model.means = torch.Tensor().to(self.device)

@@ -282,15 +282,33 @@ class Db_vae(nn.Module):
         return
 
     def get_histo_max(self):
+        """
+        This function returns the sampling probability we should give to each data point
+        in the current batch of data calculated via z-space latent probability density
+        of each data point. Specifically, the method used here is called "max" method.
+        That is, for each data point in the z-space, we take dimension that data point is
+        the least regular (its probability density is low in that dimension), and use that
+        to indicate the probability of sampling this point.
+        """
+        # probs is the same shape as number of data points passed into the model for training.
+        # it represents probability of each data point in the latent space. data points that
+        # are close to other data points in the z-space should have high probability, and
+        # the ones that are far from other data points should have low probability.
         probs = torch.zeros_like(self.means[:,0]).to(self.device)
 
+        # for each data point in z-space, we want to find its maximum probability density
+        # across all dimensions. Therefore we need to loop through each z-dimension,
+        # then calculate probability density of each data point in that dimension, and
+        # then take the max.
         for i in range(self.z_dim):
             dist = self.means[:,i].cpu().numpy()
 
+            # hist here is essentially the probability 
             hist, bins = np.histogram(dist, density=True, bins=self.num_bins)
 
             bins[0] = -float('inf')
             bins[-1] = float('inf')
+            # np.digitize give indices of which bin each number in dist lies in.
             bin_idx = np.digitize(dist, bins)
 
             hist = hist + self.alpha
@@ -373,7 +391,9 @@ class Db_vae(nn.Module):
 
     def sample(self, n_samples, z_samples=[]):
         """
-        Sample n_samples from the model. Return both the sampled images
+        Randomly sample n_samples points in the z-space, and reconstruct
+        images from these z-space points and return those reconstructed images.
+        Return both the sampled images
         (from bernoulli) and the means for these bernoullis (as these are
         used to plot the data manifold).
         """
