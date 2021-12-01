@@ -335,6 +335,40 @@ class Trainer:
         else:
             self.train_loaders.faces.sampler.weights = torch.ones(len(self.train_loaders.faces.sampler.weights))
 
+    def _print_protected_feature_dist(self, probs, data_loader, all_labels, all_index, epoch, percentage = 0.1):
+        """
+        print the distribution of protected features for top k% images that are most rare
+        according to the latent space weights. That is, for the top k% images that are
+        very rare in the latent space, print how much percent of images are female/male,
+        how much are old/young and so on.
+        """
+        n_samples = int(len(all_labels) * percentage) # number of images to calculate statistics over.
+
+        # getting the indices of largest weights in probs array
+        highest_weight_idxs = probs.argsort(descending=True)[:n_samples]
+        
+        # getting the indices of largest weights in our image dataset.
+        highest_weight_dataset_idxs = all_index[highest_weight_idxs]
+
+        # data_loader.dataset.dataset.store is the dataframe that contains the metadata,
+        # including sex + age information
+        highest_weight_data = data_loader.dataset.dataset.store.iloc[highest_weight_dataset_idxs]
+        sex_data = highest_weight_data['Sex']
+        age_data = highest_weight_data['Age']
+        
+        num_females = 0
+        num_males = 0
+        for sex in sex_data:
+            if sex == 'Female':
+                num_females += 1
+            else:
+                num_males += 1
+        print(f'gender distribution of {n_samples} rarest data in z-space:')
+        plt.bar(['Female', 'Male'], [num_females, num_males])
+        plt.show()
+        print(f'age distribution of {n_samples} rarest data in z-space:')
+        plt.hist(age_data)
+        plt.show()
 
     def _update_histogram(self, data_loader, epoch):
         """Updates the histogram of `self.model`.
@@ -349,6 +383,8 @@ class Trainer:
 
         with torch.no_grad():
             for _, batch in enumerate(data_loader):
+                # the batch consists of multiple things. The order of things come from
+                # the DatasetOutput definition from data_utils.py
                 images, labels, index, _ = batch
                 images, labels, index = images.to(self.device), labels.to(self.device), index.to(self.device)
 
@@ -373,6 +409,8 @@ class Trainer:
                             tip="Set --debias_method to 'max', 'max5' or 'gaussian'.")
                 raise Exception()
 
+        # do something here to see the distribution of protected features in the "rare" group
+        self._print_protected_feature_dist(probs, data_loader, all_labels, all_index, epoch)
         self.visualize_bias(probs, data_loader, all_labels, all_index, epoch)
 
         return probs
@@ -400,7 +438,7 @@ class Trainer:
 
 
     def visualize_best_and_worst(self, data_loaders, all_labels, all_indices, epoch, best_faces, worst_faces, best_other, worst_other, n_rows=4, save=True):
-        # TODO: Add annotation
+        """plot the best and worst images with regards to prediction probability and actual label."""
         n_samples = n_rows**2
 
         fig=plt.figure(figsize=(16, 16))
