@@ -179,9 +179,12 @@ def init_trainining_results(config: Config):
         os.makedirs("results")
 
     config.__post_init__(printing=True)
+    # this is where we create folders that will contain our results.
     os.makedirs("results/"+ config.run_folder + '/best_and_worst')
     os.makedirs("results/"+ config.run_folder + '/bias_probs')
     os.makedirs("results/"+ config.run_folder + '/reconstructions')
+    os.makedirs("results/"+ config.run_folder + '/gender_dist')
+    os.makedirs("results/"+ config.run_folder + '/age_dist')
 
     with open(f"results/{config.run_folder}/flags.txt", "w") as write_file:
       write_file.write(f"z_dim = {config.z_dim}\n")

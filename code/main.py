@@ -1,3 +1,6 @@
+# use this main.py for running on HYAK cluster.
+# use main.ipynb for exploration
+
 from utils import visualize_tensor
 from vae_model import Db_vae
 from pathlib import Path
@@ -88,12 +91,14 @@ def classify_random_image(
      classify_image(path_to_img, path_to_model=path_to_model, z_dim=z_dim, device=device, batch_size=batch_size)
 
 if __name__ == "__main__":
-     config = Config()
+
+     # only test training for now. Change this later to test evaluation.
+     config = Config(run_folder='train_X_ray', debias_type='max5', run_mode='train', use_h5=False)
 
      if config.run_mode == 'train':
           logger.info("Running training only")
           trainer = make_trainer(config)
-          trainer.train()
+          trainer.train(100)
      elif config.run_mode == 'eval':
           logger.info("Running evaluation only")
           evaluator = make_evaluator(config)

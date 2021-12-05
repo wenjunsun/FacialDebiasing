@@ -363,12 +363,17 @@ class Trainer:
                 num_females += 1
             else:
                 num_males += 1
-        print(f'gender distribution of {n_samples} rarest data in z-space:')
+        
+        fig = plt.figure()
+        plt.title('gender distribution of {n_samples} rarest data in z-space')
         plt.bar(['Female', 'Male'], [num_females, num_males])
-        plt.show()
-        print(f'age distribution of {n_samples} rarest data in z-space:')
+        fig.savefig(f"results/{self.config.run_folder}/gender_dist/epoch={epoch}", bbox_inches='tight')
+
+        fig = plt.figure()
+        plt.title(f'age distribution of {n_samples} rarest data in z-space')
         plt.hist(age_data)
-        plt.show()
+        fig.savefig(f"results/{self.config.run_folder}/age_dist/epoch={epoch}", bbox_inches='tight')
+        plt.close()
 
     def _update_histogram(self, data_loader, epoch):
         """Updates the histogram of `self.model`.
