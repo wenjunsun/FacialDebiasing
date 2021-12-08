@@ -352,7 +352,7 @@ class Trainer:
 
         # data_loader.dataset.dataset.store is the dataframe that contains the metadata,
         # including sex + age information
-        highest_weight_data = data_loader.dataset.dataset.store.iloc[highest_weight_dataset_idxs]
+        highest_weight_data = data_loader.dataset.dataset.store.iloc[highest_weight_dataset_idxs.cpu()]
         sex_data = highest_weight_data['Sex']
         age_data = highest_weight_data['Age']
         
