@@ -93,7 +93,7 @@ def classify_random_image(
 if __name__ == "__main__":
 
      # only test training for now. Change this later to test evaluation.
-     config = Config(run_folder='train_X_ray', debias_type='max5', run_mode='train', use_h5=False)
+     config = Config(run_folder='train_X_ray', debias_type='max5', run_mode='train', use_h5=False, batch_size = 256 * 4)
 
      if config.run_mode == 'train':
           logger.info("Running training only")
