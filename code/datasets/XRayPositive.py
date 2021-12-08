@@ -18,10 +18,11 @@ class XRayPositiveDataset(GenericImageDataset):
     def read_image(self, idx: int):
         # self.path_to_images = data/CheXpert_Images
         # self.store.iloc[idex]['Path'] = 'CheXpert-v1.0-small/train/patient00001/study1/view1_frontal.jpg'
-        return Image.open(os.path.join(
-            self.path_to_images,
-            self.store.iloc[idx]['Path']
-        ))
+        # return Image.open(os.path.join(
+        #     self.path_to_images,
+        #     self.store.iloc[idx]['Path']
+        # ))
+        return Image.open(self.path_to_images + '/' + self.store.iloc[idx]['Path']).convert("RGB")
 
     def init_store(self):
         # metadata tells us the path and label of each image.
